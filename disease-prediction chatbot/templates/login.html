@@ -1,0 +1,352 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - Disease Prediction System</title>
+    
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
+    <!-- Bootstrap for styling -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
+</head>
+<body style="background-color: #f8f9fa; min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 20px;">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-6 col-lg-5">
+                <!-- Main Login Card -->
+                <div class="card shadow border-0" style="border-radius: 15px; overflow: hidden; transition: all 0.3s ease;">
+                    <!-- Login Header -->
+                    <div class="card-header text-center text-white py-4" style="background: linear-gradient(135deg, #0d6efd, #0dcaf0); border-bottom: none;">
+                        <div class="mb-3">
+                            <i class="fas fa-stethoscope fa-3x"></i>
+                        </div>
+                        <h3 class="mb-1"><i class="fas fa-user-circle me-2"></i>Welcome Back</h3>
+                        <p class="mb-0">Sign in to Disease Prediction System</p>
+                    </div>
+                    
+                    <!-- Login Form -->
+                    <div class="card-body p-4">
+                        <!-- Messages section -->
+                        {% if messages %}
+                        <div id="messages-container" class="mb-4">
+                            {% for message in messages %}
+                            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                                {{ message }}
+                                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                        
+                        <!-- Login Form -->
+                        <form method="POST" action="{% url 'login' %}" id="loginForm">
+                            {% csrf_token %}
+                            
+                            <!-- Email Input -->
+                            <div class="mb-4">
+                                <label for="email" class="form-label fw-bold">
+                                    <i class="fas fa-envelope me-2 text-primary"></i>Email
+                                </label>
+                                <div class="input-group">
+                                    <span class="input-group-text bg-light border-end-0">
+                                        <i class="fas fa-envelope text-primary"></i>
+                                    </span>
+                                    <input 
+                                        type="email" 
+                                        class="form-control border-start-0" 
+                                        id="email" 
+                                        name="email" 
+                                        placeholder="Enter your email" 
+                                        required
+                                        autocomplete="email"
+                                    >
+                                </div>
+                                <div id="emailFeedback" class="invalid-feedback"></div>
+                            </div>
+                            
+                            <!-- Password Input -->
+                            <div class="mb-4">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <label for="password" class="form-label fw-bold">
+                                        <i class="fas fa-lock me-2 text-primary"></i>Password
+                                    </label>
+                                    <a href="#" class="small text-primary" id="forgotPassword">Forgot password?</a>
+                                </div>
+                                <div class="input-group">
+                                    <span class="input-group-text bg-light border-end-0">
+                                        <i class="fas fa-lock text-primary"></i>
+                                    </span>
+                                    <input 
+                                        type="password" 
+                                        class="form-control border-start-0 border-end-0" 
+                                        id="password" 
+                                        name="password" 
+                                        placeholder="Enter your password" 
+                                        required
+                                        autocomplete="current-password"
+                                    >
+                                    <button 
+                                        type="button" 
+                                        class="input-group-text bg-light border-start-0" 
+                                        id="togglePassword"
+                                        style="cursor: pointer;"
+                                    >
+                                        <i class="fas fa-eye text-primary"></i>
+                                    </button>
+                                </div>
+                                <div class="password-strength mt-2" id="passwordStrength"></div>
+                            </div>
+                            
+                            <!-- Remember Me -->
+                            <div class="mb-4 form-check">
+                                <input type="checkbox" class="form-check-input" id="rememberMe" name="remember_me">
+                                <label class="form-check-label" for="rememberMe">Remember me</label>
+                            </div>
+                            
+                            <!-- Login Button -->
+                            <div class="d-grid mb-4">
+                                <button 
+                                    type="submit" 
+                                    class="btn btn-primary py-2"
+                                    id="loginButton"
+                                >
+                                    <i class="fas fa-sign-in-alt me-2"></i>
+                                    <span id="loginText">Login</span>
+                                    <span id="loginSpinner" class="spinner-border spinner-border-sm ms-2 d-none" role="status"></span>
+                                </button>
+                            </div>
+                            
+                            
+                            <!-- Register Link -->
+                            <div class="text-center">
+                                <p class="mb-0">Don't have an account? <a href="{% url 'signup' %}" class="text-primary fw-bold">Sign up</a></p>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+                
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Modal for Forgot Password -->
+    <div class="modal fade" id="forgotPasswordModal" tabindex="-1" aria-labelledby="forgotPasswordModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title" id="forgotPasswordModalLabel">
+                        <i class="fas fa-key me-2"></i>Reset Password
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p>Enter your email address to receive a password reset link.</p>
+                    <div class="mb-3">
+                        <label for="resetEmail" class="form-label">Email address</label>
+                        <input type="email" class="form-control" id="resetEmail" placeholder="Enter your email">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-primary" id="sendResetLink">
+                        <i class="fas fa-paper-plane me-2"></i>Send Reset Link
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- Custom JavaScript -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Variables
+            const loginForm = document.getElementById('loginForm');
+            const emailInput = document.getElementById('email');
+            const passwordInput = document.getElementById('password');
+            const togglePassword = document.getElementById('togglePassword');
+            const loginButton = document.getElementById('loginButton');
+            const loginText = document.getElementById('loginText');
+            const loginSpinner = document.getElementById('loginSpinner');
+            const forgotPasswordLink = document.getElementById('forgotPassword');
+            const passwordStrength = document.getElementById('passwordStrength');
+            const sendResetLinkBtn = document.getElementById('sendResetLink');
+            
+            // Initialize Bootstrap Modal
+            let forgotPasswordModal;
+            if (typeof bootstrap !== 'undefined') {
+                forgotPasswordModal = new bootstrap.Modal(document.getElementById('forgotPasswordModal'));
+            }
+            
+            // Toggle password visibility
+            if (togglePassword) {
+                togglePassword.addEventListener('click', function() {
+                    const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+                    passwordInput.setAttribute('type', type);
+                    
+                    // Change the eye icon
+                    const eyeIcon = this.querySelector('i');
+                    eyeIcon.classList.toggle('fa-eye');
+                    eyeIcon.classList.toggle('fa-eye-slash');
+                });
+            }
+            
+            // Password strength meter
+            if (passwordInput) {
+                passwordInput.addEventListener('input', function() {
+                    const password = this.value;
+                    let strength = 0;
+                    
+                    // Create password strength indicator if it doesn't exist
+                    if (!passwordStrength.querySelector('.progress')) {
+                        const progressHTML = `
+                            <div class="progress" style="height: 5px;">
+                                <div class="progress-bar" role="progressbar" style="width: 0%;" 
+                                    aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
+                            </div>
+                            <small class="form-text mt-1">Password strength: <span id="strengthText">None</span></small>
+                        `;
+                        passwordStrength.innerHTML = progressHTML;
+                    }
+                    
+                    const progressBar = passwordStrength.querySelector('.progress-bar');
+                    const strengthText = passwordStrength.querySelector('#strengthText');
+                    
+                    // Check password strength
+                    if (password.length > 0) {
+                        strength += 1;
+                    }
+                    if (password.length >= 8) {
+                        strength += 1;
+                    }
+                    if (/[A-Z]/.test(password)) {
+                        strength += 1;
+                    }
+                    if (/[0-9]/.test(password)) {
+                        strength += 1;
+                    }
+                    if (/[^A-Za-z0-9]/.test(password)) {
+                        strength += 1;
+                    }
+                    
+                    // Update progress bar
+                    const percent = (strength / 5) * 100;
+                    progressBar.style.width = percent + '%';
+                    
+                    // Update text and color based on strength
+                    if (strength === 0) {
+                        strengthText.textContent = 'None';
+                        progressBar.className = 'progress-bar';
+                    } else if (strength <= 2) {
+                        strengthText.textContent = 'Weak';
+                        progressBar.className = 'progress-bar bg-danger';
+                    } else if (strength <= 3) {
+                        strengthText.textContent = 'Medium';
+                        progressBar.className = 'progress-bar bg-warning';
+                    } else {
+                        strengthText.textContent = 'Strong';
+                        progressBar.className = 'progress-bar bg-success';
+                    }
+                });
+            }
+            
+            // Handle form submission with loading state
+            if (loginForm) {
+                loginForm.addEventListener('submit', function(e) {
+                    // Basic email validation
+                    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                    if (!emailRegex.test(emailInput.value)) {
+                        e.preventDefault();
+                        emailInput.classList.add('is-invalid');
+                        document.getElementById('emailFeedback').textContent = 'Please enter a valid email address';
+                        return;
+                    }
+                    
+                    // Show loading state
+                    loginText.textContent = 'Logging in...';
+                    loginSpinner.classList.remove('d-none');
+                    loginButton.disabled = true;
+                });
+            }
+            
+            // Handle forgot password link
+            if (forgotPasswordLink && forgotPasswordModal) {
+                forgotPasswordLink.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    forgotPasswordModal.show();
+                });
+            }
+            
+            // Handle send reset link button
+            if (sendResetLinkBtn) {
+                sendResetLinkBtn.addEventListener('click', function() {
+                    const resetEmail = document.getElementById('resetEmail').value;
+                    if (!resetEmail) {
+                        alert('Please enter your email address');
+                        return;
+                    }
+                    
+                    // Show sending state
+                    const originalText = sendResetLinkBtn.innerHTML;
+                    sendResetLinkBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status"></span>Sending...';
+                    sendResetLinkBtn.disabled = true;
+                    
+                    // Simulate API call with timeout (replace with actual API call)
+                    setTimeout(function() {
+                        // Hide modal
+                        forgotPasswordModal.hide();
+                        
+                        // Create success message
+                        const alertContainer = document.createElement('div');
+                        alertContainer.classList.add('alert', 'alert-success', 'alert-dismissible', 'fade', 'show', 'mb-4');
+                        alertContainer.innerHTML = `
+                            Password reset link sent to <strong>${resetEmail}</strong>. Please check your inbox.
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        `;
+                        
+                        // Add alert before form
+                        loginForm.parentNode.insertBefore(alertContainer, loginForm);
+                        
+                        // Reset button state
+                        sendResetLinkBtn.innerHTML = originalText;
+                        sendResetLinkBtn.disabled = false;
+                        
+                        // Clear input
+                        document.getElementById('resetEmail').value = '';
+                    }, 1500);
+                });
+            }
+            
+            
+            
+            // Auto-hide alerts after 5 seconds
+            const alerts = document.querySelectorAll('.alert');
+            alerts.forEach(alert => {
+                setTimeout(() => {
+                    const bsAlert = new bootstrap.Alert(alert);
+                    bsAlert.close();
+                }, 5000);
+            });
+            
+            // Add some animation to the login card
+            const loginCard = document.querySelector('.card');
+            if (loginCard) {
+                loginCard.style.opacity = '0';
+                loginCard.style.transform = 'translateY(20px)';
+                
+                setTimeout(() => {
+                    loginCard.style.transition = 'all 0.5s ease';
+                    loginCard.style.opacity = '1';
+                    loginCard.style.transform = 'translateY(0)';
+                }, 100);
+            }
+        });
+    </script>
+</body>
+</html>
